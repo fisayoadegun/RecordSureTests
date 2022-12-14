@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
 
 namespace recordsure.interview {
@@ -22,7 +24,11 @@ namespace recordsure.interview {
         /// <param name="source">An enumerable containing words</param>
         /// <returns></returns>
         public IEnumerable<int> ExtractNumbers(IEnumerable<string> source) {
-            throw new NotImplementedException();
+            foreach (var cha in source)
+			{
+                if (int.TryParse(cha, out int num))
+                    yield return num;
+			}
         }
 
         /// <summary>
@@ -67,7 +73,7 @@ namespace recordsure.interview {
         /// <param name="second">Second list of words</param>
         /// <returns></returns>
         public string LongestCommonWord(IEnumerable<string> first, IEnumerable<string> second) {
-            throw new NotImplementedException();
+            var longestcommonword = first.Intersect(second).Aggregate("", (max, cur) => max.Length > cur.Length ? max : cur);
         }
 
         /// <summary>
@@ -83,7 +89,8 @@ namespace recordsure.interview {
         /// <param name="km">distance in kilometers</param>
         /// <returns></returns>
         public double DistanceInMiles(double km) {
-            throw new NotImplementedException();
+            double distancemiles = km / 1.6;
+            return distancemiles;
         }
 
         /// <summary>
@@ -99,7 +106,8 @@ namespace recordsure.interview {
         /// <param name="miles">distance in miles</param>
         /// <returns></returns>
         public double DistanceInKm(double miles) {
-            throw new NotImplementedException();
+            double distancekm = miles * 1.6;
+            return distancekm;
         }
 
         /// <summary>
@@ -121,7 +129,13 @@ namespace recordsure.interview {
         /// <param name="word">The word to check</param>
         /// <returns></returns>
         public bool IsPalindrome(string word) {
-            throw new NotImplementedException();
+            int length = word.Length;
+            for (int i = 0; i < length / 2; i++)
+            {
+                if (word[i] != word[length - i - 1])
+                    return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -142,7 +156,18 @@ namespace recordsure.interview {
         /// <param name="source"></param>
         /// <returns></returns>
         public IEnumerable<object> Shuffle(IEnumerable<object> source) {
-            throw new NotImplementedException();
+            if (source == null) throw new ArgumentNullException("source");
+
+            Random random = new Random();
+            var buffer = source.ToList();
+
+            for (int i = 0; i < buffer.Count; i++)
+            {
+                int j = random.Next(i, buffer.Count);
+                yield return buffer[j];
+
+                buffer[j] = buffer[i];
+            }
         }
 
         /// <summary>
@@ -154,7 +179,7 @@ namespace recordsure.interview {
         /// <param name="source"></param>
         /// <returns></returns>
         public int[] Sort(int[] source) {
-            throw new NotImplementedException();
+            return SortArray(source, 0, source.Length - 1);
         }
 
         /// <summary>
@@ -168,7 +193,25 @@ namespace recordsure.interview {
         /// </summary>
         /// <returns></returns>
         public int FibonacciSum() {
-            throw new NotImplementedException();
+            int sum = 0;
+            int prev = 0;
+            int cur = 1;
+
+            while (true)
+            {
+                int oldCur = cur;
+                cur += prev;
+                prev = oldCur;
+
+
+                if (cur >= 4000000)
+                    break;
+
+                if (cur % 2 == 0)
+                    sum += cur;
+            }
+
+            return sum;
         }
 
         /// <summary>
@@ -180,19 +223,27 @@ namespace recordsure.interview {
         public IEnumerable<int> GenerateList() {
             var ret = new List<int>();
             var numThreads = 2;
-
+            Mutex mutex = new Mutex();
             Thread[] threads = new Thread[numThreads];
-            for (var i = 0; i < numThreads; i++) {
+
+            for (var i = 0; i < numThreads; i++)
+            {
                 threads[i] = new Thread(() => {
                     var complete = false;
-                    while (!complete) {
+                    while (!complete)
+                    {
+                        mutex.WaitOne();
                         var next = ret.Count + 1;
                         Thread.Sleep(new Random().Next(1, 10));
-                        if (next <= 100) {
+                        if (next <= 100)
+                        {
                             ret.Add(next);
                         }
 
-                        if (ret.Count >= 100) {
+                        mutex.ReleaseMutex();
+
+                        if (ret.Count >= 100)
+                        {
                             complete = true;
                         }
                     }
@@ -200,11 +251,45 @@ namespace recordsure.interview {
                 threads[i].Start();
             }
 
-            for (var i = 0; i < numThreads; i++) {
+            for (var i = 0; i < numThreads; i++)
+            {
                 threads[i].Join();
             }
 
             return ret;
         }
+    }
+
+    private int[] SortArray(int[] array, int leftIndex, int rightIndex)
+    {
+        var i = leftIndex;
+        var j = rightIndex;
+        var pivot = array[leftIndex];
+        while (i <= j)
+        {
+            while (array[i] < pivot)
+            {
+                i++;
+            }
+
+            while (array[j] > pivot)
+            {
+                j--;
+            }
+            if (i <= j)
+            {
+                int temp = array[i];
+                array[i] = array[j];
+                array[j] = temp;
+                i++;
+                j--;
+            }
+        }
+
+        if (leftIndex < j)
+            SortArray(array, leftIndex, j);
+        if (i < rightIndex)
+            SortArray(array, i, rightIndex);
+        return array;
     }
 }

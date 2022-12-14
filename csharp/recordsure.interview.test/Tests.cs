@@ -104,7 +104,9 @@ namespace recordsure.interview.test
 
         [Test]
         public void CanSort() {
-            throw new NotImplementedException();
+            var array = new int[] { 73, 57, 49, 99, 133, 20, 1 };
+            var expected = new int[] { 1, 20, 49, 57, 73, 99, 133 };
+            CollectionAssert.AreEqual(expected, instance.Sort(array));
         }
 
         [Test]
